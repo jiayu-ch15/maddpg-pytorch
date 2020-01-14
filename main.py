@@ -12,7 +12,7 @@ from utils.buffer import ReplayBuffer
 from utils.env_wrappers import SubprocVecEnv, DummyVecEnv
 from algorithms.maddpg import MADDPG
 
-USE_CUDA = False  # torch.cuda.is_available()
+USE_CUDA = True  # torch.cuda.is_available()
 
 def make_parallel_env(env_id, n_rollout_threads, seed, discrete_action):
     def get_env_fn(rank):
@@ -55,6 +55,9 @@ def run(config):
                                   tau=config.tau,
                                   lr=config.lr,
                                   hidden_dim=config.hidden_dim)
+    ######
+    # print(len(maddpg.agents))
+    ######
     replay_buffer = ReplayBuffer(config.buffer_length, maddpg.nagents,
                                  [obsp.shape[0] for obsp in env.observation_space],
                                  [acsp.shape[0] if isinstance(acsp, Box) else acsp.n
@@ -66,7 +69,7 @@ def run(config):
                                         config.n_episodes))
         obs = env.reset()
         # obs.shape = (n_rollout_threads, nagent)(nobs), nobs differs per agent so not tensor
-        maddpg.prep_rollouts(device='cpu')
+        maddpg.prep_rollouts(device='cpu') 
 
         explr_pct_remaining = max(0, config.n_exploration_eps - ep_i) / config.n_exploration_eps
         maddpg.scale_noise(config.final_noise_scale + (config.init_noise_scale - config.final_noise_scale) * explr_pct_remaining)

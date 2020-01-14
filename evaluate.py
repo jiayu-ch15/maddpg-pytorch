@@ -32,8 +32,8 @@ def run(config):
         obs = env.reset()
         if config.save_gifs:
             frames = []
-            frames.append(env.render('rgb_array')[0])
-        env.render('human')
+            frames.append(env.render(mode='rgb_array')[0])
+        env.render(mode='human')
         for t_i in range(config.episode_length):
             calc_start = time.time()
             # rearrange observations to be per agent, and convert to torch Variable
@@ -46,13 +46,15 @@ def run(config):
             actions = [ac.data.numpy().flatten() for ac in torch_actions]
             obs, rewards, dones, infos = env.step(actions)
             if config.save_gifs:
-                frames.append(env.render('rgb_array')[0])
+                frames.append(env.render(mode='rgb_array')[0])
             calc_end = time.time()
             elapsed = calc_end - calc_start
             if elapsed < ifi:
                 time.sleep(ifi - elapsed)
-            env.render('human')
+            #print(env.render('rgb_array'))
+            env.render(mode='human')
         if config.save_gifs:
+            #print('#########')
             gif_num = 0
             while (gif_path / ('%i_%i.gif' % (gif_num, ep_i))).exists():
                 gif_num += 1

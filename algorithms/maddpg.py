@@ -31,10 +31,33 @@ class MADDPG(object):
         """
         self.nagents = len(alg_types)
         self.alg_types = alg_types
-        self.agents = [DDPGAgent(lr=lr, discrete_action=discrete_action,
-                                 hidden_dim=hidden_dim,
-                                 **params)
-                       for params in agent_init_params]
+        #print('######')
+        #print(agent_init_params)
+        #print('######')
+        for i in range(self.nagents):
+            if agent_init_params[i]['agent_type']=='adversary':
+                adver_agent = DDPGAgent(lr=lr, discrete_action=discrete_action,
+                                 hidden_dim=hidden_dim, 
+                                 num_in_pol=agent_init_params[i]['num_in_pol'],
+                                 num_out_pol=agent_init_params[i]['num_out_pol'],
+                                 num_in_critic=agent_init_params[i]['num_in_critic'])
+            else:
+                ordi_agent = DDPGAgent(lr=lr, discrete_action=discrete_action,
+                                 hidden_dim=hidden_dim, 
+                                 num_in_pol=agent_init_params[i]['num_in_pol'],
+                                 num_out_pol=agent_init_params[i]['num_out_pol'],
+                                 num_in_critic=agent_init_params[i]['num_in_critic'])
+        self.agents = []
+        for i in range(self.nagents):
+            if agent_init_params[i]['agent_type']=='adversary':
+                self.agents.append(adver_agent)
+            else:
+                self.agents.append(ordi_agent)
+        #self.agents = [DDPGAgent(lr=lr, discrete_action=discrete_action,
+        #                         hidden_dim=hidden_dim,
+        #                         **params)
+        #               for params in agent_init_params]
+        #print(self.agents)
         self.agent_init_params = agent_init_params
         self.gamma = gamma
         self.tau = tau
@@ -238,8 +261,8 @@ class MADDPG(object):
         agent_init_params = []
         alg_types = [adversary_alg if atype == 'adversary' else agent_alg for
                      atype in env.agent_types]
-        for acsp, obsp, algtype in zip(env.action_space, env.observation_space,
-                                       alg_types):
+        for acsp, obsp, algtype, atype in zip(env.action_space, env.observation_space,
+                                       alg_types, env.agent_types):
             num_in_pol = obsp.shape[0]
             if isinstance(acsp, Box):
                 discrete_action = False
@@ -258,7 +281,8 @@ class MADDPG(object):
                 num_in_critic = obsp.shape[0] + get_shape(acsp)
             agent_init_params.append({'num_in_pol': num_in_pol,
                                       'num_out_pol': num_out_pol,
-                                      'num_in_critic': num_in_critic})
+                                      'num_in_critic': num_in_critic,
+                                      'agent_type': atype})
         init_dict = {'gamma': gamma, 'tau': tau, 'lr': lr,
                      'hidden_dim': hidden_dim,
                      'alg_types': alg_types,
