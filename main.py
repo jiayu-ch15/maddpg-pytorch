@@ -11,6 +11,7 @@ from utils.make_env import make_env
 from utils.buffer import ReplayBuffer
 from utils.env_wrappers import SubprocVecEnv, DummyVecEnv
 from algorithms.maddpg import MADDPG
+#from algorithms.maddpg_att import MADDPG_ATT
 
 USE_CUDA = False  # torch.cuda.is_available()
 
