@@ -1,3 +1,3 @@
-python main.py simple_spread Cooperation_attention
+python main.py simple_spread exp_spread
 
 
