@@ -93,6 +93,8 @@ class MADDPG(object):
                 If passed in, important quantities will be logged
         """
         obs, acs, rews, next_obs, dones = sample
+        #print(torch.Size(obs))
+        #print(torch.Size(acs))
         curr_agent = self.agents[agent_i]
 
         curr_agent.critic_optimizer.zero_grad()
