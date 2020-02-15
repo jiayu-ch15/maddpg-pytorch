@@ -33,7 +33,7 @@ def run(config):
         if config.save_gifs:
             frames = []
             frames.append(env.render('rgb_array')[0])
-        env.render('human')
+        #env.render('human')
         for t_i in range(config.episode_length):
             calc_start = time.time()
             # rearrange observations to be per agent, and convert to torch Variable
@@ -51,7 +51,7 @@ def run(config):
             elapsed = calc_end - calc_start
             if elapsed < ifi:
                 time.sleep(ifi - elapsed)
-            env.render('human')
+            #env.render('human')
         if config.save_gifs:
             gif_num = 0
             while (gif_path / ('%i_%i.gif' % (gif_num, ep_i))).exists():
