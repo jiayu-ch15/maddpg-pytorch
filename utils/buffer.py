@@ -73,6 +73,9 @@ class ReplayBuffer(object):
         if self.curr_i == self.max_steps:
             self.curr_i = 0
 
+    def get_buffer(self):    # trajectory
+        return (self.ac_buffs, self.ac_prob_buffs, self.rew_buffs, self.next_obs_buffs, self.done_buffs)
+
     def sample(self, N, to_gpu=False, norm_rews=True):
         inds = np.random.choice(np.arange(self.filled_i), size=N,
                                 replace=False)

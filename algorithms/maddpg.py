@@ -90,7 +90,7 @@ class MADDPG(object):
 
         return actions,actions_prob
 
-    def update(self, sample, agent_i, parallel=False, logger=None):
+    def update(self, buffer, sample, agent_i, parallel=False, logger=None):
         """
         Update parameters of agent model based on sample from replay buffer
         Inputs:
@@ -104,6 +104,7 @@ class MADDPG(object):
                 If passed in, important quantities will be logged
         """
         obs, acs, acs_prob, rews, next_obs, dones = sample
+        obs_tra, acs_tra, acs_prob_tra, rews_tra, next_obs_tra, dones_tra = buffer  #trajectory
         curr_agent = self.agents[agent_i]
         #print('actions',acs)
         #print('actions_prob',acs_prob)
@@ -112,7 +113,7 @@ class MADDPG(object):
         Gt = []
         gamma = 0.99
         # print('rews0',rews[0]) #rews batch * agent_num
-        rews_single = rews[0].numpy().tolist()
+        rews_single = rews_tra[0].numpy().tolist()
         for r in rews_single[::-1]:   #翻转
             R = r + gamma * R
             Gt.insert(0, R) 

@@ -101,7 +101,8 @@ def run(config):
                     for a_i in range(maddpg.nagents):
                         sample = replay_buffer.sample(config.batch_size,
                                                       to_gpu=USE_CUDA)
-                        maddpg.update(sample, a_i, logger=logger)
+                        buffer = replay_buffer.get_buffer()
+                        maddpg.update(buffer,sample, a_i, logger=logger)
                     # maddpg.update_all_targets()
                 maddpg.prep_rollouts(device='cpu')
         ep_rews = replay_buffer.get_average_rewards(
