@@ -61,18 +61,20 @@ class DDPGAgent(object):
         Outputs:
             action (PyTorch Variable): Actions for this agent
         """
-        action = self.policy(obs)
+        action_prob = self.policy(obs)
+        #print('action_pro',action)
         if self.discrete_action:
             if explore:
-                action = gumbel_softmax(action, hard=True)
+                action = gumbel_softmax(action_prob, hard=True)
+                #print('action',action)
             else:
-                action = onehot_from_logits(action)
+                action = onehot_from_logits(action_prob)
         else:  # continuous action
             if explore:
-                action += Variable(Tensor(self.exploration.noise()),
+                action_prob += Variable(Tensor(self.exploration.noise()),
                                    requires_grad=False)
-            action = action.clamp(-1, 1)
-        return action
+            action = action_prob.clamp(-1, 1)
+        return action, action_prob
 
     def get_params(self):
         return {'policy': self.policy.state_dict(),

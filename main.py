@@ -79,13 +79,16 @@ def run(config):
                                   requires_grad=False)
                          for i in range(maddpg.nagents)]
             # get actions as torch Variables
-            torch_agent_actions = maddpg.step(torch_obs, explore=True)
+            torch_agent_actions,torch_agent_actions_prob = maddpg.step(torch_obs, explore=True)
             # convert actions to numpy arrays
             agent_actions = [ac.data.numpy() for ac in torch_agent_actions]
+            agent_actions_prob = [ac_prob.data.numpy() for ac_prob in torch_agent_actions_prob]
+            #print('agent_actions',agent_actions)
+            #print('actions_prob',agent_actions_prob)
             # rearrange actions to be per environment
             actions = [[ac[i] for ac in agent_actions] for i in range(config.n_rollout_threads)]
             next_obs, rewards, dones, infos = env.step(actions)
-            replay_buffer.push(obs, agent_actions, rewards, next_obs, dones)
+            replay_buffer.push(obs, agent_actions, agent_actions_prob, rewards, next_obs, dones)
             obs = next_obs
             t += config.n_rollout_threads
             if (len(replay_buffer) >= config.batch_size and
@@ -99,7 +102,7 @@ def run(config):
                         sample = replay_buffer.sample(config.batch_size,
                                                       to_gpu=USE_CUDA)
                         maddpg.update(sample, a_i, logger=logger)
-                    maddpg.update_all_targets()
+                    # maddpg.update_all_targets()
                 maddpg.prep_rollouts(device='cpu')
         ep_rews = replay_buffer.get_average_rewards(
             config.episode_length * config.n_rollout_threads)
