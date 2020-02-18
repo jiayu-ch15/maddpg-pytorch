@@ -74,7 +74,13 @@ class ReplayBuffer(object):
             self.curr_i = 0
 
     def get_buffer(self):    # trajectory
-        return (self.ac_buffs, self.ac_prob_buffs, self.rew_buffs, self.next_obs_buffs, self.done_buffs)
+        #print('obs_buffer',len(self.obs_buffs[0][0:self.filled_i]))
+        return ([self.obs_buffs[i][0:self.filled_i] for i in range(self.num_agents)],
+                [self.ac_buffs[i][0:self.filled_i] for i in range(self.num_agents)], 
+                [self.ac_prob_buffs[i][0:self.filled_i] for i in range(self.num_agents)], 
+                [self.rew_buffs[i][0:self.filled_i] for i in range(self.num_agents)], 
+                [self.next_obs_buffs[i][0:self.filled_i] for i in range(self.num_agents)], 
+                [self.done_buffs[i][0:self.filled_i] for i in range(self.num_agents)])
 
     def sample(self, N, to_gpu=False, norm_rews=True):
         inds = np.random.choice(np.arange(self.filled_i), size=N,
@@ -103,3 +109,6 @@ class ReplayBuffer(object):
         else:
             inds = np.arange(max(0, self.curr_i - N), self.curr_i)
         return [self.rew_buffs[i][inds].mean() for i in range(self.num_agents)]
+    
+    def clear_buffer(self):
+        self.filled_i = 0

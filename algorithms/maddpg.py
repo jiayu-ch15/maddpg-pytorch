@@ -4,6 +4,7 @@ from gym.spaces import Box, Discrete
 from utils.networks import MLPNetwork
 from utils.misc import soft_update, average_gradients, onehot_from_logits, gumbel_softmax
 from utils.agents import DDPGAgent
+import numpy as np
 
 MSELoss = torch.nn.MSELoss()
 
@@ -90,7 +91,7 @@ class MADDPG(object):
 
         return actions,actions_prob
 
-    def update(self, buffer, sample, agent_i, parallel=False, logger=None):
+    def update(self, buffer, sample, agent_i, batch_size, parallel=False, logger=None):
         """
         Update parameters of agent model based on sample from replay buffer
         Inputs:
@@ -106,19 +107,22 @@ class MADDPG(object):
         obs, acs, acs_prob, rews, next_obs, dones = sample
         obs_tra, acs_tra, acs_prob_tra, rews_tra, next_obs_tra, dones_tra = buffer  #trajectory
         curr_agent = self.agents[agent_i]
-        #print('actions',acs)
-        #print('actions_prob',acs_prob)
+        #print('actions',acs[0].size())
+        #print('actions_tra',len(acs_tra[0]))
 
         R = 0
         Gt = []
         gamma = 0.99
         # print('rews0',rews[0]) #rews batch * agent_num
-        rews_single = rews_tra[0].numpy().tolist()
+        rews_single = rews_tra[0]
         for r in rews_single[::-1]:   #翻转
             R = r + gamma * R
             Gt.insert(0, R) 
             #print('Gt',Gt)
+        Gt_len = len(Gt)
         Gt = torch.tensor(Gt).view(-1,1)
+        inds = np.random.choice(np.arange(Gt_len), size=batch_size,replace=False)
+        Gt = Gt[inds]
         #Gt.view(-1,1)
         #print('Gt',Gt.size())
 

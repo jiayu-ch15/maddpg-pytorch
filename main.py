@@ -93,6 +93,7 @@ def run(config):
             t += config.n_rollout_threads
             if (len(replay_buffer) >= config.batch_size and
                 (t % config.steps_per_update) < config.n_rollout_threads):
+                #print('buffer_len',replay_buffer.filled_i)
                 if USE_CUDA:
                     maddpg.prep_training(device='gpu')
                 else:
@@ -102,7 +103,8 @@ def run(config):
                         sample = replay_buffer.sample(config.batch_size,
                                                       to_gpu=USE_CUDA)
                         buffer = replay_buffer.get_buffer()
-                        maddpg.update(buffer,sample, a_i, logger=logger)
+                        maddpg.update(buffer,sample, a_i, config.batch_size, logger=logger)
+                replay_buffer.clear_buffer()
                     # maddpg.update_all_targets()
                 maddpg.prep_rollouts(device='cpu')
         ep_rews = replay_buffer.get_average_rewards(
